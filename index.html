@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'none'; img-src 'none'; media-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none';" />
+  <title>Secure Text Encryptor</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b0f17;
+      --panel: #111827;
+      --panel-2: #0f172a;
+      --border: #263244;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #8b5cf6;
+      --accent-2: #a78bfa;
+      --danger: #f87171;
+      --ok: #34d399;
+      --warning: #fbbf24;
+      --shadow: rgba(0, 0, 0, 0.32);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { height: 100%; }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(139, 92, 246, 0.22), transparent 36rem),
+        radial-gradient(circle at bottom right, rgba(52, 211, 153, 0.10), transparent 32rem),
+        var(--bg);
+      color: var(--text);
+      padding: 28px;
+    }
+
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+      display: grid;
+      gap: 18px;
+    }
+
+    .header {
+      display: grid;
+      gap: 8px;
+      padding: 18px 20px;
+      background: rgba(17, 24, 39, 0.78);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: 0 18px 48px var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.45rem, 2vw, 2rem);
+      letter-spacing: -0.035em;
+    }
+
+    .subtext {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+      max-width: 86ch;
+    }
+
+    .security-line {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid rgba(167, 139, 250, 0.32);
+      background: rgba(139, 92, 246, 0.12);
+      color: #ddd6fe;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 0.83rem;
+      white-space: nowrap;
+    }
+
+    .workbench {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 180px minmax(0, 1fr);
+      gap: 16px;
+      align-items: stretch;
+    }
+
+    .box, .control-card {
+      background: rgba(17, 24, 39, 0.82);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: 0 18px 48px var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+
+    .box {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      min-height: 470px;
+      overflow: hidden;
+    }
+
+    .box-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(15, 23, 42, 0.7);
+    }
+
+    .box-title {
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .counter {
+      color: var(--muted);
+      font-size: 0.8rem;
+      white-space: nowrap;
+    }
+
+    textarea {
+      width: 100%;
+      height: 100%;
+      min-height: 390px;
+      resize: vertical;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--text);
+      padding: 16px;
+      font: 0.98rem/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      caret-color: var(--accent-2);
+    }
+
+    textarea::placeholder, input::placeholder { color: #6b7280; }
+
+    .control-card {
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    label {
+      display: grid;
+      gap: 7px;
+      font-size: 0.84rem;
+      color: var(--muted);
+    }
+
+    input[type="password"], input[type="number"] {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 11px 12px;
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--text);
+      outline: none;
+    }
+
+    input[type="password"]:focus, input[type="number"]:focus, textarea:focus {
+      box-shadow: inset 0 0 0 1px rgba(167, 139, 250, 0.55);
+    }
+
+    .button-stack {
+      display: grid;
+      gap: 10px;
+      margin-top: 2px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 13px;
+      padding: 12px 14px;
+      color: white;
+      font-weight: 800;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--accent), #6d28d9);
+      box-shadow: 0 10px 28px rgba(109, 40, 217, 0.28);
+      transition: transform 140ms ease, opacity 140ms ease, filter 140ms ease;
+    }
+
+    button:hover:not(:disabled) { transform: translateY(-1px); filter: brightness(1.06); }
+    button:active:not(:disabled) { transform: translateY(0); }
+    button:disabled { opacity: 0.42; cursor: not-allowed; box-shadow: none; }
+
+    .secondary {
+      background: rgba(31, 41, 55, 0.95);
+      box-shadow: none;
+      border: 1px solid var(--border);
+    }
+
+    .status {
+      min-height: 44px;
+      border: 1px solid var(--border);
+      background: rgba(15, 23, 42, 0.72);
+      border-radius: 13px;
+      padding: 10px;
+      color: var(--muted);
+      font-size: 0.84rem;
+      line-height: 1.4;
+    }
+
+    .status.ok { color: var(--ok); border-color: rgba(52, 211, 153, 0.28); }
+    .status.bad { color: var(--danger); border-color: rgba(248, 113, 113, 0.32); }
+    .status.warn { color: var(--warning); border-color: rgba(251, 191, 36, 0.28); }
+
+    .notes {
+      padding: 14px 16px;
+      background: rgba(17, 24, 39, 0.78);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      color: var(--muted);
+      line-height: 1.55;
+      box-shadow: 0 18px 48px var(--shadow);
+    }
+
+    .notes strong { color: var(--text); }
+
+    @media (max-width: 900px) {
+      body { padding: 16px; }
+      .workbench { grid-template-columns: 1fr; }
+      .control-card { order: -1; }
+      .box { min-height: 320px; }
+      textarea { min-height: 270px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="header" aria-labelledby="title">
+      <h1 id="title">Secure Text Encryptor</h1>
+      <p class="subtext">
+        Encrypt text locally in this browser. The password is never saved, embedded in the HTML, or sent anywhere. The encrypted output contains only public parameters needed for decryption: version, KDF settings, salt, IV, and ciphertext.
+      </p>
+      <div class="security-line" aria-label="Security settings">
+        <span class="pill">AES-256-GCM authenticated encryption</span>
+        <span class="pill">PBKDF2-SHA-256 password key derivation</span>
+        <span class="pill">1,000,000 iterations</span>
+        <span class="pill">Random 256-bit salt + 96-bit IV</span>
+        <span class="pill">No network access by CSP</span>
+      </div>
+    </section>
+
+    <section class="workbench">
+      <section class="box" aria-labelledby="input-title">
+        <div class="box-head">
+          <div id="input-title" class="box-title">Input</div>
+          <div id="inputCounter" class="counter">0 chars</div>
+        </div>
+        <textarea id="inputText" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="For encryption: paste plain text here.&#10;&#10;For decryption: paste the encrypted DESTINATION-ENC text here."></textarea>
+      </section>
+
+      <aside class="control-card" aria-label="Encryption controls">
+        <label>
+          Password
+          <input id="password" type="password" autocomplete="new-password" placeholder="Required" />
+        </label>
+
+        <div class="button-stack">
+          <button id="encryptBtn" disabled>Encrypt →</button>
+          <button id="decryptBtn" disabled>Decrypt →</button>
+          <button id="swapBtn" class="secondary" type="button">Swap boxes</button>
+          <button id="clearBtn" class="secondary" type="button">Clear</button>
+        </div>
+
+        <div id="status" class="status">Enter a password to enable encryption and decryption.</div>
+      </aside>
+
+      <section class="box" aria-labelledby="output-title">
+        <div class="box-head">
+          <div id="output-title" class="box-title">Output</div>
+          <div id="outputCounter" class="counter">0 chars</div>
+        </div>
+        <textarea id="outputText" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="Encrypted or decrypted result appears here."></textarea>
+      </section>
+    </section>
+
+    <section class="notes">
+      <strong>Operational note:</strong> keep this file offline and trusted. Anyone can read the HTML/JavaScript, but that does not reveal the password or the derived AES key. However, a maliciously edited copy of this file could steal whatever password you type, so do not use random hosted copies.
+    </section>
+  </main>
+
+  <script>
+    'use strict';
+
+    const FORMAT_PREFIX = 'DESTINATION-ENC:v1:';
+    const ITERATIONS = 1_000_000;
+    const SALT_BYTES = 32; // 256-bit salt
+    const IV_BYTES = 12;   // 96-bit IV recommended for AES-GCM
+    const TAG_LENGTH_BITS = 128;
+
+    const inputText = document.getElementById('inputText');
+    const outputText = document.getElementById('outputText');
+    const passwordInput = document.getElementById('password');
+    const encryptBtn = document.getElementById('encryptBtn');
+    const decryptBtn = document.getElementById('decryptBtn');
+    const swapBtn = document.getElementById('swapBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const statusBox = document.getElementById('status');
+    const inputCounter = document.getElementById('inputCounter');
+    const outputCounter = document.getElementById('outputCounter');
+
+    const encoder = new TextEncoder();
+    const decoder = new TextDecoder();
+
+    function setStatus(message, kind = '') {
+      statusBox.className = `status ${kind}`.trim();
+      statusBox.textContent = message;
+    }
+
+    function setBusy(isBusy) {
+      const hasPassword = passwordInput.value.length > 0;
+      encryptBtn.disabled = isBusy || !hasPassword;
+      decryptBtn.disabled = isBusy || !hasPassword;
+      passwordInput.disabled = isBusy;
+      inputText.disabled = isBusy;
+      outputText.disabled = isBusy;
+    }
+
+    function updateCounters() {
+      inputCounter.textContent = `${inputText.value.length.toLocaleString()} chars`;
+      outputCounter.textContent = `${outputText.value.length.toLocaleString()} chars`;
+    }
+
+    function updateButtonState() {
+      const enabled = passwordInput.value.length > 0;
+      encryptBtn.disabled = !enabled;
+      decryptBtn.disabled = !enabled;
+      setStatus(enabled ? 'Ready. Password is present only in memory while this page is open.' : 'Enter a password to enable encryption and decryption.', enabled ? 'ok' : '');
+    }
+
+    function randomBytes(length) {
+      const bytes = new Uint8Array(length);
+      crypto.getRandomValues(bytes);
+      return bytes;
+    }
+
+    function bytesToBase64Url(bytes) {
+      let binary = '';
+      const chunkSize = 0x8000;
+      for (let i = 0; i < bytes.length; i += chunkSize) {
+        binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+      }
+      return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+    }
+
+    function base64UrlToBytes(text) {
+      const normalized = text.replace(/-/g, '+').replace(/_/g, '/');
+      const padded = normalized + '='.repeat((4 - normalized.length % 4) % 4);
+      const binary = atob(padded);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+      return bytes;
+    }
+
+    function stableMetaText(meta) {
+      return JSON.stringify({
+        v: meta.v,
+        alg: meta.alg,
+        kdf: meta.kdf,
+        hash: meta.hash,
+        iter: meta.iter,
+        salt: meta.salt,
+        iv: meta.iv
+      });
+    }
+
+    async function deriveAesKey(password, saltBytes, iterations) {
+      const passwordBytes = encoder.encode(password);
+      const keyMaterial = await crypto.subtle.importKey(
+        'raw',
+        passwordBytes,
+        { name: 'PBKDF2' },
+        false,
+        ['deriveKey']
+      );
+
+      return crypto.subtle.deriveKey(
+        {
+          name: 'PBKDF2',
+          salt: saltBytes,
+          iterations,
+          hash: 'SHA-256'
+        },
+        keyMaterial,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['encrypt', 'decrypt']
+      );
+    }
+
+    async function encryptText() {
+      const plaintext = inputText.value;
+      const password = passwordInput.value;
+
+      if (!password) throw new Error('Password is required.');
+      if (!plaintext) throw new Error('Input text is empty.');
+      if (!crypto?.subtle) throw new Error('Web Crypto is unavailable in this browser/context. Use a modern browser over HTTPS or local file mode.');
+
+      const saltBytes = randomBytes(SALT_BYTES);
+      const ivBytes = randomBytes(IV_BYTES);
+      const key = await deriveAesKey(password, saltBytes, ITERATIONS);
+
+      const meta = {
+        v: 1,
+        alg: 'AES-256-GCM',
+        kdf: 'PBKDF2',
+        hash: 'SHA-256',
+        iter: ITERATIONS,
+        salt: bytesToBase64Url(saltBytes),
+        iv: bytesToBase64Url(ivBytes)
+      };
+
+      const aad = encoder.encode(stableMetaText(meta));
+      const ciphertextBuffer = await crypto.subtle.encrypt(
+        { name: 'AES-GCM', iv: ivBytes, additionalData: aad, tagLength: TAG_LENGTH_BITS },
+        key,
+        encoder.encode(plaintext)
+      );
+
+      const payload = {
+        ...meta,
+        ct: bytesToBase64Url(new Uint8Array(ciphertextBuffer))
+      };
+
+      outputText.value = FORMAT_PREFIX + bytesToBase64Url(encoder.encode(JSON.stringify(payload)));
+      updateCounters();
+    }
+
+    async function decryptText() {
+      const encrypted = inputText.value.trim();
+      const password = passwordInput.value;
+
+      if (!password) throw new Error('Password is required.');
+      if (!encrypted) throw new Error('Input text is empty.');
+      if (!encrypted.startsWith(FORMAT_PREFIX)) throw new Error('Invalid encrypted text format. Expected DESTINATION-ENC:v1: prefix.');
+      if (!crypto?.subtle) throw new Error('Web Crypto is unavailable in this browser/context. Use a modern browser over HTTPS or local file mode.');
+
+      const encodedPayload = encrypted.slice(FORMAT_PREFIX.length).trim();
+      const payloadJson = decoder.decode(base64UrlToBytes(encodedPayload));
+      const payload = JSON.parse(payloadJson);
+
+      if (payload.v !== 1 || payload.alg !== 'AES-256-GCM' || payload.kdf !== 'PBKDF2' || payload.hash !== 'SHA-256') {
+        throw new Error('Unsupported encrypted payload settings.');
+      }
+
+      const saltBytes = base64UrlToBytes(payload.salt);
+      const ivBytes = base64UrlToBytes(payload.iv);
+      const ciphertextBytes = base64UrlToBytes(payload.ct);
+      const key = await deriveAesKey(password, saltBytes, payload.iter);
+      const aad = encoder.encode(stableMetaText(payload));
+
+      const plaintextBuffer = await crypto.subtle.decrypt(
+        { name: 'AES-GCM', iv: ivBytes, additionalData: aad, tagLength: TAG_LENGTH_BITS },
+        key,
+        ciphertextBytes
+      );
+
+      outputText.value = decoder.decode(plaintextBuffer);
+      updateCounters();
+    }
+
+    async function run(action) {
+      setBusy(true);
+      setStatus(action === 'encrypt' ? 'Encrypting…' : 'Decrypting…', 'warn');
+      try {
+        if (action === 'encrypt') await encryptText();
+        else await decryptText();
+        setStatus(action === 'encrypt' ? 'Encrypted successfully.' : 'Decrypted successfully.', 'ok');
+      } catch (error) {
+        outputText.value = '';
+        updateCounters();
+        const message = error instanceof DOMException && error.name === 'OperationError'
+          ? 'Decrypt failed. Wrong password, corrupted encrypted text, or modified encryption metadata.'
+          : (error?.message || 'Operation failed.');
+        setStatus(message, 'bad');
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    encryptBtn.addEventListener('click', () => run('encrypt'));
+    decryptBtn.addEventListener('click', () => run('decrypt'));
+
+    swapBtn.addEventListener('click', () => {
+      const oldInput = inputText.value;
+      inputText.value = outputText.value;
+      outputText.value = oldInput;
+      updateCounters();
+    });
+
+    clearBtn.addEventListener('click', () => {
+      inputText.value = '';
+      outputText.value = '';
+      passwordInput.value = '';
+      updateCounters();
+      updateButtonState();
+      inputText.focus();
+    });
+
+    passwordInput.addEventListener('input', updateButtonState);
+    inputText.addEventListener('input', updateCounters);
+    outputText.addEventListener('input', updateCounters);
+
+    window.addEventListener('pagehide', () => {
+      passwordInput.value = '';
+    });
+
+    updateCounters();
+    updateButtonState();
+  </script>
+</body>
+</html>
